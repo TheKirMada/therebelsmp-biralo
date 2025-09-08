@@ -49,6 +49,12 @@ jobs:
             -x "/usr/*" "/bin/*" "/lib/*" "/lib64/*" "/sbin/*" "/etc/*" "/var/*" \
             ".git/*" ".github/*" ".backup/*" || true
 
+      - name: 🔄 Pull latest changes (avoid push rejection)
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git pull --rebase origin main || true
+
       - name: 📤 Push updated files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
