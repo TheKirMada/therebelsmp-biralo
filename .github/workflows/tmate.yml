@@ -55,11 +55,12 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git pull --rebase origin main || true
 
-      - name: 📤 Push updated files
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "🔁 Updated SSH + backup for ${{ github.event.client_payload.vps_name || 'manual-vps' }}"
-          file_pattern: 'links/*.txt .backup/*.zip'
+      - uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "🔁 Updated SSH + backup for manual-vps"
+        file_pattern: "links/*.txt .backup/*.zip"
+        push_options: '--force'
+
 
       - name: ⏳ Keep VPS alive (POSIX-safe loop)
         run: |
