@@ -8,7 +8,7 @@ on:
 jobs:
   start-vps:
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # ⏱️ 6 hours (adjust as needed)
+    timeout-minutes: 360  # ⏱️ 6 hours
     env:
       TMATE_SERVER: nyc1.tmate.io
 
@@ -60,6 +60,7 @@ jobs:
         with:
           commit_message: "🔁 Updated SSH + backup for ${{ github.event.client_payload.vps_name || 'manual-vps' }}"
           file_pattern: 'links/*.txt .backup/*.zip'
+          push_options: '--force'
 
       - name: ⏳ Keep VPS alive (POSIX-safe loop)
         run: |
