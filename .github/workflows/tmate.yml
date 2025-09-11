@@ -8,7 +8,7 @@ on:
 jobs:
   start-vps:
     runs-on: ubuntu-latest
-    timeout-minutes: 354  # 5h54m to stop safely before 6h GitHub limit
+    timeout-minutes: 345  # 5h45m to stop safely before 6h GitHub limit
     env:
       TMATE_SERVER: nyc1.tmate.io
 
@@ -45,11 +45,11 @@ jobs:
           nohup ./playit > playit.log 2>&1 &
           echo "✅ Playit started."
 
-      - name: ⏳ Keep VPS alive (5h54m loop)
+      - name: ⏳ Keep VPS alive (5h45m loop)
         run: |
           i=1
-          while [ $i -le 354 ]; do
-            echo "🟢 Running minute $i/354..."
+          while [ $i -le 345 ]; do
+            echo "🟢 Running minute $i/345..."
             command sleep 60 || break
             i=$((i+1))
           done
@@ -84,3 +84,21 @@ jobs:
             -H "Content-Type: application/json" \
             https://api.github.com/repos/${{ github.repository }}/dispatches \
             -d '{"event_type": "create-vps", "client_payload": {"vps_name": "manual-vps", "backup": true}}'
+
+      # ⚠️ Failsafe Backup – runs no matter what (even on crash/cancel)
+      - name: 📦 Failsafe backup
+        if: always()
+        run: |
+          echo "⚠️ Running failsafe backup..."
+          tar czf vps_backup_failsafe.tar.gz ./data ./scripts ./configs 2>/dev/null || tar czf vps_backup_failsafe.tar.gz .
+          url=$(curl --upload-file vps_backup_failsafe.tar.gz https://transfer.sh/vps_backup_failsafe.tar.gz)
+          echo "🆙 Failsafe backup uploaded: $url"
+          echo $url > last_backup_url.txt
+
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git pull --rebase origin main || true
+
+          git add last_backup_url.txt
+          git commit -m "⚠️ Failsafe backup URL" || true
+          git push || true
